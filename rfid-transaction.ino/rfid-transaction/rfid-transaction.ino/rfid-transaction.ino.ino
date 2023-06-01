@@ -10,14 +10,13 @@
 #define RST_PIN 9
 #define SS_PIN 10
 
-const int BUZZER_PIN = 6;
-
 MFRC522 mfrc522(SS_PIN, RST_PIN);
 MFRC522::MIFARE_Key key;
 MFRC522::StatusCode card_status;
 
 int moneyAmount = 0;
 int pointsAmount = 0;
+const int BUZZER_PIN = 6;
 
 
 void setup() {
@@ -117,14 +116,15 @@ void loop() {
 
     if (amount > moneyAmount) {
       Serial.println(F("Insufficient funds."));
-      buzz("long");
+        buzz("once");
       return;
     }
 
     moneyAmount -= amount;
     pointsAmount += 10; // Increased points by 10 because he/she used money
 
-    Serial.println(F("Transaction completed successfully."));
+    Serial.print(F("Transaction completed successfully. Mode used is `Money` and paid amount: "));
+    Serial.println(amount);
 
     // Send transaction information to Python code
     Serial.print(F("Transaction: Money, Deducted: $"));
@@ -146,11 +146,10 @@ void loop() {
     }
 
     pointsAmount -= amount;
-    Serial.println(F("Transaction completed successfully."));
 
-    // Send transaction information to Python code
-    Serial.print(F("Transaction: Points, Deducted: "));
+    Serial.print(F("Transaction completed successfully. Mode used is `Points` and paid amount: "));
     Serial.println(amount);
+
   } else {
     Serial.println("Invalid Input.");
       buzz("long");
@@ -193,8 +192,7 @@ void loop() {
   mfrc522.PCD_StopCrypto1();
 
   buzz("once");
-  // Wait for 10 seconds before making another transaction
-  Serial.println("Wait 2 seconds before making another transaction \n\n\n");
+  Serial.println("\n \n");
   delay(2000);
 }
 
