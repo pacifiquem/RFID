@@ -10,6 +10,8 @@
 #define RST_PIN 9
 #define SS_PIN 10
 
+const int BUZZER_PIN = 6;
+
 MFRC522 mfrc522(SS_PIN, RST_PIN);
 MFRC522::MIFARE_Key key;
 MFRC522::StatusCode card_status;
@@ -115,6 +117,7 @@ void loop() {
 
     if (amount > moneyAmount) {
       Serial.println(F("Insufficient funds."));
+      buzz("long");
       return;
     }
 
@@ -138,6 +141,7 @@ void loop() {
 
     if (amount > pointsAmount) {
       Serial.println(F("Insufficient funds."));
+        buzz("long");
       return;
     }
 
@@ -149,6 +153,7 @@ void loop() {
     Serial.println(amount);
   } else {
     Serial.println("Invalid Input.");
+      buzz("long");
     return;
   }
 
@@ -187,7 +192,33 @@ void loop() {
   mfrc522.PICC_HaltA();
   mfrc522.PCD_StopCrypto1();
 
+  buzz("once");
   // Wait for 10 seconds before making another transaction
-  Serial.println("Wait 10 seconds before making another transaction \n\n\n");
-  delay(10000);
+  Serial.println("Wait 2 seconds before making another transaction \n\n\n");
+  delay(2000);
+}
+
+
+void buzz(String type){
+  if(type.equals("once")) {
+    analogWrite(BUZZER_PIN, 60);
+    delay(60);
+    analogWrite(BUZZER_PIN, 0);
+  }else if(type.equals("twice")){
+    analogWrite(BUZZER_PIN, 60);
+    delay(60);
+    analogWrite(BUZZER_PIN, 0);
+    delay(60);
+    analogWrite(BUZZER_PIN, 60);
+    delay(60);
+    analogWrite(BUZZER_PIN, 0);
+  }else if(type.equals("long")){
+    analogWrite(BUZZER_PIN, 60);
+    delay(1000);
+    analogWrite(BUZZER_PIN, 0);
+  } else {
+    analogWrite(BUZZER_PIN, 60);
+    delay(60);
+    analogWrite(BUZZER_PIN, 0);
+  }
 }
