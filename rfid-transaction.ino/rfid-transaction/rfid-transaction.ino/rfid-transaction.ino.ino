@@ -123,8 +123,7 @@ void loop() {
     moneyAmount -= amount;
     pointsAmount += 10; // Increased points by 10 because he/she used money
 
-    Serial.print(F("Transaction completed successfully. Mode used is `Money` and paid amount: "));
-    Serial.println(amount);
+    Serial.println("Transaction completed successfully. Mode used is `Points` and paid amount: " + String(amount));
 
     // Send transaction information to Python code
     Serial.print(F("Transaction: Money, Deducted: $"));
@@ -147,8 +146,7 @@ void loop() {
 
     pointsAmount -= amount;
 
-    Serial.print(F("Transaction completed successfully. Mode used is `Points` and paid amount: "));
-    Serial.println(amount);
+    Serial.println("Transaction completed successfully. Mode used is `Points` and paid amount: " + String(amount));
 
   } else {
     Serial.println("Invalid Input.");
@@ -193,7 +191,7 @@ void loop() {
 
   buzz("once");
   Serial.println("\n \n");
-  delay(2000);
+  delay(5000);
 }
 
 

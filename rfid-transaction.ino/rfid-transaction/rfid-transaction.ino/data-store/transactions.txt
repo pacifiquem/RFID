@@ -1,0 +1,1 @@
+Transaction completed successfully. Mode used is `Points` and paid amount: 1
