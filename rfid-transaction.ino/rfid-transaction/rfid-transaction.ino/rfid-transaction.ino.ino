@@ -4,7 +4,6 @@
 * Co-Authors: Ighor - Tresor
 */
 
-
 #include <SPI.h>
 #include <MFRC522.h>
 
@@ -18,6 +17,7 @@ MFRC522::StatusCode card_status;
 int moneyAmount = 0;
 int pointsAmount = 0;
 
+
 void setup() {
   Serial.begin(9600);
   SPI.begin();
@@ -28,8 +28,6 @@ void setup() {
 }
 
 void loop() {
-
-
 
   for (byte i = 0; i < 6; i++) {
     key.keyByte[i] = 0xFF;
@@ -93,20 +91,25 @@ void loop() {
 
   Serial.println(F("Enter 'm' to use money, 'p' to use points:"));
 
+  // Serial.print(serCount);
+  // Serial.print(" ");
+  // Serial.println(Serial.available());
+
   while (Serial.available() <= 0) {
-    //Wait for input
+    // Wait for input
   }
 
   char input = Serial.read();
   int amount = 0;
 
-  if (input == 'm') {
+
+
+  if (input == 109 || input == 'm' || input == 'M') {
     Serial.println(F("Enter the amount to deduct from money: "));
 
-    while (Serial.available() <= 1) {
+    while (Serial.available() <= 0) {
       // Wait for input
     }
-
 
     amount = Serial.parseInt();
 
@@ -119,10 +122,15 @@ void loop() {
     pointsAmount += 10; // Increased points by 10 because he/she used money
 
     Serial.println(F("Transaction completed successfully."));
-  } else if (input == 'p') {
+
+    // Send transaction information to Python code
+    Serial.print(F("Transaction: Money, Deducted: $"));
+    Serial.println(amount);
+
+  } else if (input == 'p'|| input == 'P' || input == 112) {
     Serial.println(F("Enter the amount to deduct from points: "));
 
-    while (Serial.available() <= 1) {
+    while (Serial.available() <= 0) {
       // Wait for input
     }
 
@@ -135,6 +143,10 @@ void loop() {
 
     pointsAmount -= amount;
     Serial.println(F("Transaction completed successfully."));
+
+    // Send transaction information to Python code
+    Serial.print(F("Transaction: Points, Deducted: "));
+    Serial.println(amount);
   } else {
     Serial.println("Invalid Input.");
     return;
@@ -154,14 +166,14 @@ void loop() {
 
   sprintf((char*)buffer, "%d", pointsAmount);
   card_status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, pointsBlock, &key, &(mfrc522.uid));
-  
+
   if (card_status != MFRC522::STATUS_OK) {
     Serial.println(F("Authentication error for block 8."));
     return;
   }
 
   card_status = mfrc522.MIFARE_Write(pointsBlock, buffer, 16);
-  
+
   if (card_status != MFRC522::STATUS_OK) {
     Serial.println(F("Error writing to pointsBlock."));
     return;
@@ -175,7 +187,7 @@ void loop() {
   mfrc522.PICC_HaltA();
   mfrc522.PCD_StopCrypto1();
 
-  Serial.println("Wait 10 seconds before making another transaction");
-
-  delay(10000); // Delay to allow card removal before the next transaction
+  // Wait for 10 seconds before making another transaction
+  Serial.println("Wait 10 seconds before making another transaction \n\n\n");
+  delay(10000);
 }
