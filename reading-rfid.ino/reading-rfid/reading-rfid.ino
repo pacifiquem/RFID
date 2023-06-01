@@ -32,7 +32,7 @@ void loop(){
  mfrc522.PCD_StopCrypto1();
 }
 String readBytesFromBlock(){
- byte blockNumber = 4;
+ byte blockNumber = 8;
 
  card_status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, blockNumber, &key, &(mfrc522.uid));
  if(card_status != MFRC522::STATUS_OK){
