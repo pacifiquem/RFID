@@ -1,14 +1,10 @@
-/*
-* Project Name: RFID Transaction Management System
-* Author: Murangwa Pacifique
-* Co-Authors: Ighor - Tresor
-*/
-
 #include <SPI.h>
 #include <MFRC522.h>
+#include <SD.h>
 
 #define RST_PIN 9
 #define SS_PIN 10
+#define SD_CHIP_SELECT 4
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);
 MFRC522::MIFARE_Key key;
@@ -16,20 +12,27 @@ MFRC522::StatusCode card_status;
 
 int moneyAmount = 0;
 int pointsAmount = 0;
-const int BUZZER_PIN = 6;
 
+File myFile;
 
 void setup() {
-  Serial.begin(9600);
-  SPI.begin();
-  mfrc522.PCD_Init();
+  Serial.begin(9600); // initialize Serial
+  SPI.begin(); // initialize SPI
+  mfrc522.PCD_Init(); // initialize RFID Read (PCD)
+
+  Serial.println("Initializing SD card...");
+
+  if (!SD.begin(SD_CHIP_SELECT)) {
+    Serial.println("SD card initialization failed.");
+    while (1);
+  }
+
+  Serial.println("SD card initialized.\n");
 
   Serial.println(F("\n ==== Place the card near the reader. ==== \n"));
-
 }
 
 void loop() {
-
   for (byte i = 0; i < 6; i++) {
     key.keyByte[i] = 0xFF;
   }
@@ -39,7 +42,6 @@ void loop() {
   }
 
   if (!mfrc522.PICC_ReadCardSerial()) {
-    Serial.println(mfrc522.PICC_ReadCardSerial());
     Serial.println(F("Error reading card."));
     return;
   }
@@ -68,7 +70,7 @@ void loop() {
   buffer[len] = '\0'; // Null-terminate the buffer
   moneyAmount = atoi((char*)buffer);
 
-  // Authenticate block 8 to read pointsBlock amount
+  // Authenticate pointsBlock to read points amount
   card_status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, pointsBlock, &key, &(mfrc522.uid));
   if (card_status != MFRC522::STATUS_OK) {
     Serial.println(F("Authentication error for pointsBlock."));
@@ -92,23 +94,17 @@ void loop() {
 
   Serial.println(F("Enter 'm' to use money, 'p' to use points:"));
 
-  // Serial.print(serCount);
-  // Serial.print(" ");
-  // Serial.println(Serial.available());
-
-  while (Serial.available() <= 0) {
+  while (!Serial.available()) {
     // Wait for input
   }
 
   char input = Serial.read();
   int amount = 0;
 
-
-
-  if (input == 109 || input == 'm' || input == 'M') {
+  if (input == 'm' || input == 'M') {
     Serial.println(F("Enter the amount to deduct from money: "));
 
-    while (Serial.available() <= 0) {
+    while (!Serial.available()) {
       // Wait for input
     }
 
@@ -116,41 +112,38 @@ void loop() {
 
     if (amount > moneyAmount) {
       Serial.println(F("Insufficient funds."));
-        buzz("once");
       return;
     }
 
     moneyAmount -= amount;
     pointsAmount += 10; // Increased points by 10 because he/she used money
 
-    Serial.println("Transaction completed successfully. Mode used is `Points` and paid amount: " + String(amount));
+    bool saved_data_to_file = writeToSDCard(amount, "Money", moneyAmount); // save transaction to file
 
     // Send transaction information to Python code
     Serial.print(F("Transaction: Money, Deducted: $"));
     Serial.println(amount);
 
-  } else if (input == 'p'|| input == 'P' || input == 112) {
+  } else if (input == 'p' || input == 'P') {
     Serial.println(F("Enter the amount to deduct from points: "));
 
-    while (Serial.available() <= 0) {
+    while (!Serial.available()) {
       // Wait for input
     }
 
     amount = Serial.parseInt();
 
     if (amount > pointsAmount) {
-      Serial.println(F("Insufficient funds."));
-        buzz("long");
+      Serial.println(F("Insufficient points."));
       return;
     }
 
     pointsAmount -= amount;
 
-    Serial.println("Transaction completed successfully. Mode used is `Points` and paid amount: " + String(amount));
+    bool saved_data_to_file = writeToSDCard(amount, "Points", pointsAmount); // save transaction to file
 
   } else {
     Serial.println("Invalid Input.");
-      buzz("long");
     return;
   }
 
@@ -170,7 +163,7 @@ void loop() {
   card_status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, pointsBlock, &key, &(mfrc522.uid));
 
   if (card_status != MFRC522::STATUS_OK) {
-    Serial.println(F("Authentication error for block 8."));
+    Serial.println(F("Authentication error for pointsBlock."));
     return;
   }
 
@@ -189,32 +182,26 @@ void loop() {
   mfrc522.PICC_HaltA();
   mfrc522.PCD_StopCrypto1();
 
-  buzz("once");
   Serial.println("\n \n");
   delay(5000);
 }
 
-
-void buzz(String type){
-  if(type.equals("once")) {
-    analogWrite(BUZZER_PIN, 60);
-    delay(60);
-    analogWrite(BUZZER_PIN, 0);
-  }else if(type.equals("twice")){
-    analogWrite(BUZZER_PIN, 60);
-    delay(60);
-    analogWrite(BUZZER_PIN, 0);
-    delay(60);
-    analogWrite(BUZZER_PIN, 60);
-    delay(60);
-    analogWrite(BUZZER_PIN, 0);
-  }else if(type.equals("long")){
-    analogWrite(BUZZER_PIN, 60);
-    delay(1000);
-    analogWrite(BUZZER_PIN, 0);
+bool writeToSDCard(int initial_balance, String mode, int new_balance) {
+  myFile = SD.open("data.txt", FILE_WRITE);
+  if (myFile) {
+    myFile.println("");
+    myFile.print("Initial Balance: ");
+    myFile.println(initial_balance);
+    myFile.print("Mode Used: ");
+    myFile.println(mode);
+    myFile.print("New Balance: ");
+    myFile.println(new_balance);
+    myFile.println("\n");
+    myFile.close();
+    return true;
   } else {
-    analogWrite(BUZZER_PIN, 60);
-    delay(60);
-    analogWrite(BUZZER_PIN, 0);
+    Serial.println("error opening data.txt");
+    return false;
   }
 }
+
