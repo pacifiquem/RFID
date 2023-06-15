@@ -4,6 +4,17 @@ This repository contains sample projects for working with RFID technology. RFID,
 
 The projects in this repository are intended to serve as examples and starting points for developers who want to work with RFID. 
 
+# Table Of Content
+
+| Folder                                                      | Link                                                                                      |
+|-------------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| reading-memory-map                                          | [reading-memory-map](https://github.com/pacifiquem/RFID/tree/main/read-memory-map.ino)     |
+| reading-data-from-card                                      | [reading-data-from-card](https://github.com/pacifiquem/RFID/tree/main/reading-rfid.ino/reading-rfid) |
+| secure rfid or authentication with rfid                     | [secure-rfid](https://github.com/pacifiquem/RFID/tree/main/secure-rfid.ino)                |
+| writing data                                                | [writing-data](https://github.com/pacifiquem/RFID/tree/main/writing.ino/writing)           |
+| rfid transaction system                                     | [rfid-transaction-system](https://github.com/pacifiquem/RFID/tree/main/rfid-transaction.ino/rfid-transaction/rfid-transaction.ino) |
+
+
 # Getting Started
 To get started with these projects, clone this repository to your local machine and follow the instructions provided in the project's README file. Each project has its own dependencies and setup requirements, so be sure to read the instructions carefully before attempting to run any code.
 
