@@ -18,6 +18,11 @@ The projects in this repository are intended to serve as examples and starting p
 # Getting Started
 To get started with these projects, clone this repository to your local machine and follow the instructions provided in the project's README file. Each project has its own dependencies and setup requirements, so be sure to read the instructions carefully before attempting to run any code.
 
+# Connecting PCD to Arduino Uno
+
+This image shows how you can connect your PCD to an Arduino Uno board.
+![PCD to Arduino Uno picture](https://github.com/pacifiquem/RFID/blob/main/Screenshot%20from%202023-11-02%2018-52-51.png)
+
 # Contributing
 Contributions to this repository are welcome! If you have a sample project you'd like to add, please fork this repository and submit a pull request with your changes. Please include a README file with instructions for running your project.
 
